@@ -8,12 +8,10 @@ const InvadersGame = () => {
     const [ws, setWs] = useState(null);
     const [playerName, setPlayerName] = useState('');
     const canvasRef = useRef(null);
-    const playerInfoRef = useRef(null);
 
-    const host = 'localhost:8080'; // Ensure this is correct
+    const host = 'localhost:8080';
     const shipImage = useRef(new Image());
 
-    // Load image references
     const images = useRef({
         monster: [new Image(), new Image()],
         crab: [new Image(), new Image()],
@@ -23,30 +21,25 @@ const InvadersGame = () => {
     });
 
     useEffect(() => {
-        const loadImage = (src, callback) => {
+        const loadImage = (src) => {
             const img = new Image();
             img.src = src;
-            img.onload = callback;
+            img.onload = () => console.log(`Image loaded: ${src}`);
             img.onerror = () => console.error(`Failed to load image at ${src}`);
             return img;
         };
 
-        images.current.monster[0] = loadImage('resources/bicho.gif', () => console.log('Monster image 0 loaded'));
-        images.current.monster[1] = loadImage('resources/bicho1.gif', () => console.log('Monster image 1 loaded'));
-
-        images.current.crab[0] = loadImage('resources/Crab.gif', () => console.log('Crab image 0 loaded'));
-        images.current.crab[1] = loadImage('resources/Crab1.gif', () => console.log('Crab image 1 loaded'));
-
-        images.current.laser[0] = loadImage('resources/laser.gif', () => console.log('Laser image 0 loaded'));
-        images.current.laser[1] = loadImage('resources/laser2.gif', () => console.log('Laser image 1 loaded'));
-
-        images.current.bullet[0] = loadImage('resources/misil.gif', () => console.log('Bullet image 0 loaded'));
-        images.current.bullet[1] = loadImage('resources/misil.gif', () => console.log('Bullet image 1 loaded'));
-
-        images.current.bomb[0] = loadImage('resources/bombD.gif', () => console.log('Bomb image 0 loaded'));
-        images.current.bomb[1] = loadImage('resources/bombDR.gif', () => console.log('Bomb image 1 loaded'));
-
-        shipImage.current = loadImage('resources/ship.gif', () => console.log('Ship image loaded'));
+        images.current.monster[0] = loadImage('resources/bicho.gif');
+        images.current.monster[1] = loadImage('resources/bicho1.gif');
+        images.current.crab[0] = loadImage('resources/Crab.gif');
+        images.current.crab[1] = loadImage('resources/Crab1.gif');
+        images.current.laser[0] = loadImage('resources/laser.gif');
+        images.current.laser[1] = loadImage('resources/laser2.gif');
+        images.current.bullet[0] = loadImage('resources/misil.gif');
+        images.current.bullet[1] = loadImage('resources/misil.gif');
+        images.current.bomb[0] = loadImage('resources/bombD.gif');
+        images.current.bomb[1] = loadImage('resources/bombDR.gif');
+        shipImage.current = loadImage('resources/ship.gif');
 
         const socket = new ReconnectingWebSocket(`ws://${host}/ws/game`);
         setWs(socket);
@@ -60,7 +53,6 @@ const InvadersGame = () => {
             console.log('Received message:', message);
 
             try {
-                // Try parsing as players JSON
                 const data = JSON.parse(message);
                 if (data && data[Object.keys(data)[0]].name) {
                     setPlayers(data);
@@ -88,30 +80,30 @@ const InvadersGame = () => {
 
     const drawEntities = useCallback((ctx) => {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        ctx.fillStyle = 'black'; // Set background color
-        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height); // Fill the canvas background with black
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
         Object.values(entities).forEach(entity => {
             let image;
             switch (entity.type) {
                 case 'Monster':
-                    image = images.current.monster[0]; // Adjust as needed
+                    image = images.current.monster[0];
                     break;
                 case 'Crab':
-                    image = images.current.crab[0]; // Adjust as needed
+                    image = images.current.crab[0];
                     break;
                 case 'Laser':
-                    image = images.current.laser[0]; // Adjust as needed
+                    image = images.current.laser[0];
                     break;
                 case 'Bullet':
-                    image = images.current.bullet[0]; // Adjust as needed
+                    image = images.current.bullet[0];
                     break;
                 case 'Bomb':
-                    image = images.current.bomb[0]; // Adjust as needed
+                    image = images.current.bomb[0];
                     break;
                 default:
                     console.log('Unknown entity type:', entity.type);
-                    return; // Skip unknown types
+                    return;
             }
 
             if (image.complete) {
@@ -121,37 +113,21 @@ const InvadersGame = () => {
             }
         });
 
-        // Draw players separately
         Object.values(players).forEach(player => {
             if (shipImage.current.complete) {
                 ctx.drawImage(shipImage.current, player.x, player.y);
 
-                // Draw player life bar
-                const maxLife = 200; // Adjust according to your maximum life value
+                const maxLife = 200;
                 const barWidth = 50;
                 const barHeight = 10;
                 const lifeWidth = (player.life / maxLife) * barWidth;
-                const infoStyle = {
-                    position: 'absolute',
-                    left: `${player.x}px`,
-                    top: `${player.y - 30}px`, // Position above player
-                    color: 'white',
-                    fontFamily: 'Arial, sans-serif',
-                    fontSize: '12px',
-                    backgroundColor: 'black',
-                    padding: '2px',
-                    borderRadius: '4px',
-                };
 
-                // Draw life bar background
                 ctx.fillStyle = 'red';
                 ctx.fillRect(player.x, player.y - 20, barWidth, barHeight);
-                
-                // Draw life bar foreground
+
                 ctx.fillStyle = 'green';
                 ctx.fillRect(player.x, player.y - 20, lifeWidth, barHeight);
 
-                // Draw player life text
                 ctx.fillStyle = 'white';
                 ctx.font = '12px Arial';
                 ctx.fillText(`${player.life}`, player.x + barWidth / 2 - 10, player.y - 10);
@@ -161,27 +137,21 @@ const InvadersGame = () => {
         });
     }, [entities, players]);
 
-    const updateCanvas = useCallback(() => {
-        const canvas = canvasRef.current;
-        if (canvas) {
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-                drawEntities(ctx);
-            } else {
-                console.log('Context not found');
-            }
-        } else {
-            console.log('Canvas not found');
-        }
-    }, [drawEntities]);
-
     useEffect(() => {
-        const intervalId = setInterval(updateCanvas, 50); // Update every 50 ms
-
-        return () => {
-            clearInterval(intervalId);
+        const render = () => {
+            const canvas = canvasRef.current;
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    drawEntities(ctx);
+                }
+            }
+            requestAnimationFrame(render);
         };
-    }, [updateCanvas]);
+        requestAnimationFrame(render);
+
+        return () => cancelAnimationFrame(render);
+    }, [drawEntities]);
 
     const handleKeyDown = useCallback((event) => {
         if (ws && playerId) {
@@ -272,7 +242,7 @@ const InvadersGame = () => {
         <div>
             <h1>Invaders Game</h1>
             <canvas ref={canvasRef} width={640} height={480} style={{ border: '1px solid black' }}></canvas>
-            <div ref={playerInfoRef}>
+            <div>
                 {renderPlayerInfo()}
             </div>
             {playerId && (
