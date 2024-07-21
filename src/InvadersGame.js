@@ -2,16 +2,43 @@ import React, { useEffect, useState, useRef } from 'react';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 
 const InvadersGame = () => {
+    const [entities, setEntities] = useState({});
     const [players, setPlayers] = useState({});
     const [playerId, setPlayerId] = useState(null);
     const [ws, setWs] = useState(null);
+    const [playerName, setPlayerName] = useState(''); // State for player name
     const canvasRef = useRef(null);
-    const playerInfoRef = useRef(null); // Ref for player info container
+    const playerInfoRef = useRef(null);
 
     const host = 'localhost:8080'; // Ensure this is correct
     const shipImage = useRef(new Image());
 
+    // Load image references
+    const images = useRef({
+        monster: [new Image(), new Image()],
+        crab: [new Image(), new Image()],
+        laser: [new Image(), new Image()],
+        bullet: [new Image(), new Image()],
+        bomb: [new Image(), new Image()]
+    });
+
     useEffect(() => {
+        // Load all images
+        images.current.monster[0].src = 'resources/bicho.gif';  // Update paths as needed
+        images.current.monster[1].src = 'resources/bicho1.gif';
+        
+        images.current.crab[0].src = 'resources/Crab.gif';
+        images.current.crab[1].src = 'resources/Crab1.gif';
+
+        images.current.laser[0].src = 'resources/laser.gif';
+        images.current.laser[1].src = 'resources/laser2.gif';
+
+        images.current.bullet[0].src = 'resources/misil.gif';
+        images.current.bullet[1].src ='resources/misil.gif';
+
+        images.current.bomb[0].src ='resources/bombD.gif';
+        images.current.bomb[1].src ='resources/bombDR.gif';
+
         // Load the ship image
         shipImage.current.src = 'resources/ship.gif'; // Update with the correct path to your image
         shipImage.current.onload = () => console.log('Ship image loaded');
@@ -115,6 +142,32 @@ const InvadersGame = () => {
         };
     }, [ws, playerId]);
 
+    const handleNameChange = (event) => {
+        setPlayerName(event.target.value);
+    };
+
+    const handleNameSubmit = () => {
+        if (ws && playerId && playerName) {
+            const message = JSON.stringify({
+                type: 'nameChange',
+                playerId,
+                name: playerName,
+            });
+            console.log('Sending name change message:', message);
+            ws.send(message);
+        }
+    };
+
+    const handleNameBlur = () => {
+        handleNameSubmit();
+    };
+
+    const handleKeyPress = (event) => {
+        if (event.key === 'Enter') {
+            handleNameSubmit();
+        }
+    };
+
     const renderPlayerInfo = () => {
         const canvas = canvasRef.current;
         if (!canvas) return null;
@@ -174,6 +227,21 @@ const InvadersGame = () => {
             <div ref={playerInfoRef}>
                 {renderPlayerInfo()}
             </div>
+            {playerId && (
+                <div style={{ marginTop: '20px' }}>
+                    <label>
+                        Change your name:
+                        <input
+                            type="text"
+                            value={playerName}
+                            onChange={handleNameChange}
+                            onBlur={handleNameBlur} // Send name on blur
+                            onKeyPress={handleKeyPress} // Send name on Enter key
+                            placeholder="Enter new name"
+                        />
+                    </label>
+                </div>
+            )}
         </div>
     );
 };
