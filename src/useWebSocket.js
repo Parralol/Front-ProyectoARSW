@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 
-export const useWebSocket = (host, setEntities, setPlayers, setPlayerId) => {
+export const useWebSocket = (host, setEntities, setPlayers, setPlayerId, setScores) => {
   const [ws, setWs] = useState(null);
   const handledLosses = useRef(new Set()); // Track handled losses
 
@@ -27,7 +27,7 @@ export const useWebSocket = (host, setEntities, setPlayers, setPlayerId) => {
           Object.values(data).forEach(player => {
             if (player.loose && !handledLosses.current.has(player.name)) {
               handledLosses.current.add(player.name);
-              handlePlayerLoss(); // Trigger loss handling
+              handlePlayerLoss(); // Trigger loss handling and fetch scores
             }
           });
         } else {
@@ -50,7 +50,7 @@ export const useWebSocket = (host, setEntities, setPlayers, setPlayerId) => {
     return () => {
       socket.close();
     };
-  }, [host, setEntities, setPlayers, setPlayerId]);
+  }, [host, setEntities, setPlayers, setPlayerId, setScores]);
 
   // Function to handle player loss
   const handlePlayerLoss = async () => {
@@ -63,8 +63,27 @@ export const useWebSocket = (host, setEntities, setPlayers, setPlayerId) => {
         },
       });
       console.log('Loss handling request sent.');
+
+      // Fetch scores after handling loss
+      await fetchScores();
     } catch (error) {
       console.error('Error sending loss handling request:', error);
+    }
+  };
+
+  // Function to fetch scores
+  const fetchScores = async () => {
+    try {
+      const response = await fetch('https://localhost:8080/scores');
+      if (response.ok) {
+        const scores = await response.json();
+        setScores(scores);
+        console.log('Scores fetched successfully:', scores);
+      } else {
+        console.error('Failed to fetch scores:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error fetching scores:', error);
     }
   };
 

@@ -9,14 +9,17 @@ const InvadersGame = () => {
   const [players, setPlayers] = useState({});
   const [playerId, setPlayerId] = useState(null);
   const [playerName, setPlayerName] = useState('');
+  const [scores, setScores] = useState([]);
   const canvasRef = useRef(null);
   const { images, shipImage } = useLoadImages();
   const host = 'localhost:8080';
-  const ws = useWebSocket(host, setEntities, setPlayers, setPlayerId);
+  const ws = useWebSocket(host, setEntities, setPlayers, setPlayerId, setScores);
   useCanvas(canvasRef, entities, players, images, shipImage);
 
+  // Handle keydown events to prevent default scrolling behavior
   const handleKeyDown = useCallback(
     (event) => {
+      event.preventDefault(); // Prevent default behavior of keys
       if (ws && playerId) {
         const message = JSON.stringify({
           type: 'keydown',
@@ -29,8 +32,10 @@ const InvadersGame = () => {
     [ws, playerId]
   );
 
+  // Handle keyup events to prevent default scrolling behavior
   const handleKeyUp = useCallback(
     (event) => {
+      event.preventDefault(); // Prevent default behavior of keys
       if (ws && playerId) {
         const message = JSON.stringify({
           type: 'keyup',
@@ -44,12 +49,22 @@ const InvadersGame = () => {
   );
 
   React.useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
+    window.addEventListener('keydown', handleKeyDown, { capture: true });
+    window.addEventListener('keyup', handleKeyUp, { capture: true });
+
+    // Add event listener for keydown to prevent default behavior
+    const preventScroll = (event) => {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener('keydown', preventScroll);
 
     return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('keydown', handleKeyDown, { capture: true });
+      window.removeEventListener('keyup', handleKeyUp, { capture: true });
+      window.removeEventListener('keydown', preventScroll);
     };
   }, [handleKeyDown, handleKeyUp]);
 
@@ -99,6 +114,34 @@ const InvadersGame = () => {
     });
   };
 
+  const renderScoresTable = () => {
+    return (
+      <div className="scores-table">
+        <h2>Scores</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Score</th>
+              <th>Class</th>
+            </tr>
+          </thead>
+          <tbody>
+            {scores.map((score) => (
+              <tr key={score.id}>
+                <td>{score.id}</td>
+                <td>{score.name}</td>
+                <td>{score.score}</td>
+                <td>{score.class}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
   return (
     <div className="game-container">
       <h1 className="game-title">Invaders Game</h1>
@@ -122,6 +165,7 @@ const InvadersGame = () => {
           </label>
         </div>
       )}
+      {renderScoresTable()}
     </div>
   );
 };
