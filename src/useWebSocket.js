@@ -15,7 +15,7 @@ export const useWebSocket = (host, setEntities, setPlayers, setPlayerId, setScor
 
     socket.onmessage = async (event) => {
       const message = event.data;
-      //console.log('Received message:', message);
+      // console.log('Received message:', message);
 
       try {
         const data = JSON.parse(message);
@@ -24,7 +24,7 @@ export const useWebSocket = (host, setEntities, setPlayers, setPlayerId, setScor
           setPlayers(data);
 
           // Check for player loss
-          Object.values(data).forEach(player => {
+          Object.values(data).forEach((player) => {
             if (player.loose && !handledLosses.current.has(player.name)) {
               handledLosses.current.add(player.name);
               handlePlayerLoss(); // Trigger loss handling and fetch scores
@@ -56,7 +56,7 @@ export const useWebSocket = (host, setEntities, setPlayers, setPlayerId, setScor
   const handlePlayerLoss = async () => {
     try {
       // Make a request to the server to handle player loss
-      await fetch('https://localhost:8080/send', {
+      await fetch(`https://${host}/send`, {
         method: 'GET', // Change to 'POST' if the endpoint requires POST
         headers: {
           'Content-Type': 'application/json',
@@ -74,7 +74,7 @@ export const useWebSocket = (host, setEntities, setPlayers, setPlayerId, setScor
   // Function to fetch scores
   const fetchScores = async () => {
     try {
-      const response = await fetch('https://localhost:8080/scores');
+      const response = await fetch(`https://${host}/scores`);
       if (response.ok) {
         const scores = await response.json();
         setScores(scores);

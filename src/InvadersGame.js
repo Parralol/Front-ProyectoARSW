@@ -12,14 +12,24 @@ const InvadersGame = () => {
   const [scores, setScores] = useState([]);
   const canvasRef = useRef(null);
   const { images, shipImage } = useLoadImages();
-  const host = 'localhost:8080';
+  //const host = window.location.host ;
+  const host = "localhost:8080" ;
   const ws = useWebSocket(host, setEntities, setPlayers, setPlayerId, setScores);
   useCanvas(canvasRef, entities, players, images, shipImage);
 
-  // Handle keydown events to prevent default scrolling behavior
-  const handleKeyDown = useCallback(
+   // Handle keydown events to prevent default scrolling behavior
+   const handleKeyDown = useCallback(
     (event) => {
-      event.preventDefault(); // Prevent default behavior of keys
+      const activeElement = document.activeElement;
+      if (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA') {
+        return; // Allow typing in input fields and textareas
+      }
+
+      // Prevent default behavior for specific keys
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(event.key)) {
+        event.preventDefault();
+      }
+
       if (ws && playerId) {
         const message = JSON.stringify({
           type: 'keydown',
@@ -32,10 +42,9 @@ const InvadersGame = () => {
     [ws, playerId]
   );
 
-  // Handle keyup events to prevent default scrolling behavior
+  // Handle keyup events
   const handleKeyUp = useCallback(
     (event) => {
-      event.preventDefault(); // Prevent default behavior of keys
       if (ws && playerId) {
         const message = JSON.stringify({
           type: 'keyup',
@@ -52,19 +61,9 @@ const InvadersGame = () => {
     window.addEventListener('keydown', handleKeyDown, { capture: true });
     window.addEventListener('keyup', handleKeyUp, { capture: true });
 
-    // Add event listener for keydown to prevent default behavior
-    const preventScroll = (event) => {
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
-        event.preventDefault();
-      }
-    };
-
-    window.addEventListener('keydown', preventScroll);
-
     return () => {
       window.removeEventListener('keydown', handleKeyDown, { capture: true });
       window.removeEventListener('keyup', handleKeyUp, { capture: true });
-      window.removeEventListener('keydown', preventScroll);
     };
   }, [handleKeyDown, handleKeyUp]);
 
