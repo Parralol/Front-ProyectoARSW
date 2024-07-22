@@ -12,8 +12,8 @@ const InvadersGame = () => {
   const [scores, setScores] = useState([]);
   const canvasRef = useRef(null);
   const { images, shipImage } = useLoadImages();
-  //const host = window.location.host ;
-  const host = "localhost:8080" ;
+  const host = window.location.host ;
+  //const host = "localhost:8080" ;
   const ws = useWebSocket(host, setEntities, setPlayers, setPlayerId, setScores);
   useCanvas(canvasRef, entities, players, images, shipImage);
 
@@ -123,7 +123,6 @@ const InvadersGame = () => {
               <th>ID</th>
               <th>Name</th>
               <th>Score</th>
-              <th>Class</th>
             </tr>
           </thead>
           <tbody>
@@ -132,7 +131,6 @@ const InvadersGame = () => {
                 <td>{score.id}</td>
                 <td>{score.name}</td>
                 <td>{score.score}</td>
-                <td>{score.class}</td>
               </tr>
             ))}
           </tbody>
