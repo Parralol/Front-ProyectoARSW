@@ -16,15 +16,13 @@ const InvadersGame = () => {
   const ws = useWebSocket(host, setEntities, setPlayers, setPlayerId, setScores);
   useCanvas(canvasRef, entities, players, images, shipImage);
 
-  // Handle keydown events to prevent default scrolling behavior
   const handleKeyDown = useCallback(
     (event) => {
       const activeElement = document.activeElement;
       if (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA') {
-        return; // Allow typing in input fields and textareas
+        return; 
       }
 
-      // Prevent default behavior for specific keys
       if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(event.key)) {
         event.preventDefault();
       }
@@ -40,8 +38,7 @@ const InvadersGame = () => {
     },
     [ws, playerId]
   );
-
-  // Handle keyup events
+  
   const handleKeyUp = useCallback(
     (event) => {
       if (ws && playerId) {

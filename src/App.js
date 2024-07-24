@@ -1,5 +1,5 @@
 import React from 'react';
-import InvadersGame from './InvadersGame'; // Adjust the import path as needed
+import InvadersGame from './InvadersGame'; 
 
 const App = () => (
     <div>
@@ -7,4 +7,4 @@ const App = () => (
     </div>
 );
 
-export default App; // Export App as default
+export default App;
