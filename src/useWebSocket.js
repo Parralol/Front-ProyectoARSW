@@ -3,31 +3,27 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 
 export const useWebSocket = (host, setEntities, setPlayers, setPlayerId, setScores) => {
   const [ws, setWs] = useState(null);
-  const handledLosses = useRef(new Set()); // Track handled losses
+  const handledLosses = useRef(new Set());
 
   useEffect(() => {
     const socket = new ReconnectingWebSocket(`wss://${host}/ws/game`);
     setWs(socket);
 
-    socket.onopen = () => {
+    const onOpen = () => {
       console.log('WebSocket connection established.');
     };
 
-    socket.onmessage = async (event) => {
+    const onMessage = (event) => {
       const message = event.data;
-      // console.log('Received message:', message);
-
       try {
         const data = JSON.parse(message);
 
         if (data && data[Object.keys(data)[0]] && data[Object.keys(data)[0]].name) {
           setPlayers(data);
-
-          // Check for player loss
           Object.values(data).forEach((player) => {
             if (player.loose && !handledLosses.current.has(player.name)) {
               handledLosses.current.add(player.name);
-              handlePlayerLoss(); // Trigger loss handling and fetch scores
+              handlePlayerLoss();
             }
           });
         } else {
@@ -35,7 +31,6 @@ export const useWebSocket = (host, setEntities, setPlayers, setPlayerId, setScor
         }
       } catch (e) {
         console.error('Failed to parse JSON:', e);
-        console.log('Message content:', message);
         if (message.startsWith('Player ID:')) {
           const id = message.split(':')[1].trim();
           setPlayerId(id);
@@ -43,35 +38,37 @@ export const useWebSocket = (host, setEntities, setPlayers, setPlayerId, setScor
       }
     };
 
-    socket.onclose = () => {
+    const onClose = () => {
       console.log('WebSocket connection closed.');
     };
 
+    socket.addEventListener('open', onOpen);
+    socket.addEventListener('message', onMessage);
+    socket.addEventListener('close', onClose);
+
     return () => {
+      socket.removeEventListener('open', onOpen);
+      socket.removeEventListener('message', onMessage);
+      socket.removeEventListener('close', onClose);
       socket.close();
     };
   }, [host, setEntities, setPlayers, setPlayerId, setScores]);
 
-  // Function to handle player loss
   const handlePlayerLoss = async () => {
     try {
-      // Make a request to the server to handle player loss
       await fetch(`https://${host}/send`, {
-        method: 'GET', // Change to 'POST' if the endpoint requires POST
+        method: 'GET',
         headers: {
           'Content-Type': 'application/json',
         },
       });
       console.log('Loss handling request sent.');
-
-      // Fetch scores after handling loss
       await fetchScores();
     } catch (error) {
       console.error('Error sending loss handling request:', error);
     }
   };
 
-  // Function to fetch scores
   const fetchScores = async () => {
     try {
       const response = await fetch(`https://${host}/scores`);

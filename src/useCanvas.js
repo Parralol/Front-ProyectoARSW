@@ -16,6 +16,9 @@ export const useCanvas = (canvasRef, entities, players, images, shipImage) => {
           case 'Crab':
             image = images.current.crab[0];
             break;
+          case 'Ship':
+            image = images.current.ship[0];
+            break;
           case 'Laser':
             image = images.current.laser[0];
             break;

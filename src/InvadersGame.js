@@ -12,13 +12,12 @@ const InvadersGame = () => {
   const [scores, setScores] = useState([]);
   const canvasRef = useRef(null);
   const { images, shipImage } = useLoadImages();
-  const host = window.location.host ;
-  //const host = "localhost:8080" ;
+  const host = window.location.host;
   const ws = useWebSocket(host, setEntities, setPlayers, setPlayerId, setScores);
   useCanvas(canvasRef, entities, players, images, shipImage);
 
-   // Handle keydown events to prevent default scrolling behavior
-   const handleKeyDown = useCallback(
+  // Handle keydown events to prevent default scrolling behavior
+  const handleKeyDown = useCallback(
     (event) => {
       const activeElement = document.activeElement;
       if (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA') {
@@ -67,11 +66,11 @@ const InvadersGame = () => {
     };
   }, [handleKeyDown, handleKeyUp]);
 
-  const handleNameChange = (event) => {
+  const handleNameChange = useCallback((event) => {
     setPlayerName(event.target.value);
-  };
+  }, []);
 
-  const handleNameSubmit = () => {
+  const handleNameSubmit = useCallback(() => {
     if (ws && playerId && playerName) {
       const message = JSON.stringify({
         type: 'nameChange',
@@ -80,17 +79,17 @@ const InvadersGame = () => {
       });
       ws.send(message);
     }
-  };
+  }, [ws, playerId, playerName]);
 
-  const handleNameBlur = () => {
+  const handleNameBlur = useCallback(() => {
     handleNameSubmit();
-  };
+  }, [handleNameSubmit]);
 
-  const handleKeyPress = (event) => {
+  const handleKeyPress = useCallback((event) => {
     if (event.key === 'Enter') {
       handleNameSubmit();
     }
-  };
+  }, [handleNameSubmit]);
 
   const renderPlayerInfo = () => {
     const canvas = canvasRef.current;
@@ -113,7 +112,7 @@ const InvadersGame = () => {
     });
   };
 
-  const renderScoresTable = () => {
+  const renderScoresTable = useCallback(() => {
     return (
       <div className="scores-table">
         <h2>Scores</h2>
@@ -137,7 +136,7 @@ const InvadersGame = () => {
         </table>
       </div>
     );
-  };
+  }, [scores]);
 
   return (
     <div className="game-container">

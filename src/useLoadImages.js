@@ -4,6 +4,7 @@ export const useLoadImages = () => {
   const images = useRef({
     monster: [new Image(), new Image()],
     crab: [new Image(), new Image()],
+    ship: [new Image(), new Image()],
     laser: [new Image(), new Image()],
     bullet: [new Image(), new Image()],
     bomb: [new Image(), new Image()],
@@ -24,6 +25,8 @@ export const useLoadImages = () => {
     images.current.monster[1] = loadImage('resources/bicho1.gif');
     images.current.crab[0] = loadImage('resources/Crab.gif');
     images.current.crab[1] = loadImage('resources/Crab1.gif');
+    images.current.ship[0] = loadImage('resources/Aship.gif');
+    images.current.ship[1] = loadImage('resources/Aship.gif');
     images.current.laser[0] = loadImage('resources/laser.gif');
     images.current.laser[1] = loadImage('resources/laser2.gif');
     images.current.bullet[0] = loadImage('resources/misil.gif');
